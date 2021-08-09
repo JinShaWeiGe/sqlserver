@@ -3,10 +3,11 @@ import pymssql
 
 
 class SQLServer(object):
-    def __init__(self, name):
+    def __init__(self, name, host='', server='', port='', database=''):
+        self.title = ''
+        self.data = ''
         # 创建连接对象
-        self.connect = pymssql.connect(host='localhost', server='DESKTOP-FSE8NQS', port='1433',
-                                  database='TEST')  # 服务器名,账户,密码,数据库名
+        self.connect = pymssql.connect(host=host, server=server, port=port, database=database)  # 服务器名,账户,密码,数据库名
         self.cursor = self.connect.cursor()
         self.table_name = name
 
@@ -14,8 +15,6 @@ class SQLServer(object):
         self.connect.commit()
 
     def get_data(self, path):
-        self.title = ''
-        self.data = ''
         with open(path, 'r') as fr:
             self.data = fr.readlines()
         self.title = self.data[0]
@@ -69,7 +68,7 @@ class SQLServer(object):
         self.connect.close()
 
 
-s = SQLServer('persons')
+s = SQLServer('persons', host='localhost', server='DESKTOP-FSE8NQS', port='1433', database='TEST')
 s.get_data('test.csv')
 s.create_table('persons')
 # 改
