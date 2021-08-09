@@ -14,11 +14,11 @@ class SQLServer(object):
         self.connect.commit()
 
     def get_data(self, path):
-        self.first_line = ''
+        self.title = ''
         self.data = ''
         with open(path, 'r') as fr:
             self.data = fr.readlines()
-        self.first_line = self.data[0]
+        self.title = self.data[0]
         self.data = self.data[1:len(self.data)]
 
     def create_table(self, name):
@@ -33,7 +33,7 @@ class SQLServer(object):
         create_command_end = "PRIMARY KEY(id))"
         test_line = self.data[1].strip().split(',')
         for count, i in enumerate(test_line):
-            create_command += '%s %s,' % (self.first_line.split(',')[count], com.get_type(i))
+            create_command += '%s %s,' % (self.title.split(',')[count], com.get_type(i))
         create_command += create_command_end
         self.cursor.execute(create_command)
         # 输入数据
@@ -51,25 +51,19 @@ class SQLServer(object):
         # 保存
         self.__save__()
 
-    def select(self, command):
-        # 查询记录
-        self.cursor.execute(command)
-        # 获取一条记录
-        row = self.cursor.fetchone()
-        # 循环打印记录(这里只有一条，所以只打印出一条)
-        while row:
-            print(row)
-            row = self.cursor.fetchone()
-
     def command(self, command):
-        self.cursor.execute(command)
-        self.__save__()
-
-    def delete(self, command):
-        self.command(command)
-
-    def update(self, command):
-        self.command(command)
+        if 'select' in command or 'SELECT' in command:
+            # 查询记录
+            self.cursor.execute(command)
+            # 获取一条记录
+            row = self.cursor.fetchone()
+            # 循环打印记录(这里只有一条，所以只打印出一条)
+            while row:
+                print(row)
+                row = self.cursor.fetchone()
+        else:
+            self.cursor.execute(command)
+            self.__save__()
 
     def __del__(self):
         self.connect.close()
@@ -78,14 +72,20 @@ class SQLServer(object):
 s = SQLServer('persons')
 s.get_data('test.csv')
 s.create_table('persons')
+# 改
 command = "update persons set name='John' where name='John Smith'"
-s.update(command)
+s.command(command)
+# 查
 command = "SELECT * FROM persons WHERE salesrep='%s'" % 'John Doe'
-s.select(command)
+s.command(command)
+# 删
 command = "delete from persons where id=1"
-s.delete(command)
+s.command(command)
+# 增
+command = "INSERT INTO persons VALUES (4, 'Jay1', 'Jay2')"
+s.command(command)
 command = "SELECT * FROM persons"
-s.select(command)
+s.command(command)
 
 
 
